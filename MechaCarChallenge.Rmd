@@ -1,0 +1,146 @@
+---
+title: "MechaCar Statistical Analysis"
+output: html_notebook
+---
+
+
+```{r}
+library(dplyr) # Load in dplyr
+library(ggplot2)
+```
+
+#Deliverable 1
+
+```{r}
+car.mpg.df <- read.csv('resources/MechaCar_mpg.csv') # Create dataframe for mechacar csv
+head(car.mpg.df)
+```
+
+
+```{r}
+linear.model <- lm(mpg ~ vehicle_length + vehicle_weight + spoiler_angle + ground_clearance + AWD, data = car.mpg.df) # create linear model
+summary(linear.model)
+```
+
+
+```{r}
+mpg_lm <- function(y.var){
+
+  yvals <- linear.model$coefficients['mpg']*car.mpg.df$mpg +
+  linear.model$coefficients['(Intercept)']
+  
+  plt <- ggplot(car.mpg.df, aes(x=mpg, y= y.var))
+  
+  plt + labs(y=y.var) + geom_point() + geom_smooth(method="lm", se=FALSE, col="red") + geom_line(aes(y=yvals), color = "red") #plot scatter and linear model
+}
+
+mpg_lm(car.mpg.df$vehicle_weight)
+mpg_lm(car.mpg.df$vehicle_length)
+mpg_lm(car.mpg.df$spoiler_angle)
+mpg_lm(car.mpg.df$ground_clearance)
+mpg_lm(car.mpg.df$AWD)
+
+```
+
+# Deliverable 1 Analysis
+
+- Which variables/coefficients provided a non-random amount of variance to the mpg values in the dataset?
+
+  - Based on their low p-values, vehicle length and ground clearance add a non-random amount of variance to the mpg values. 
+
+- Is the slope of the linear model considered to be zero? Why or why not?
+  
+  - The p-value of this linear model is 5.35e-11 meaning the slope is not zero as our assumed significance is 5%. Therefore, the null hypothesis should be rejected.
+  
+- Does this linear model predict mpg of MechaCar prototypes effectively? Why or why not?
+  
+  - According to the adjusted r-value, this model effectively predicts the mpg 68% of the time making it a relatively effective model. 
+
+
+
+
+# Deliverable 2
+
+```{r}
+suspension.df <- read.csv('resources/Suspension_Coil.csv') 
+
+total.summary <- suspension.df %>% summarise(Mean = mean(PSI), Median = median(PSI), Variance = var(PSI), SD = sd(PSI))
+
+lot.summary <- suspension.df %>% group_by(Manufacturing_Lot) %>% summarise(Mean = mean(PSI), Median = median(PSI), Variance = var(PSI), SD = sd(PSI))
+
+head(total.summary)
+
+head(lot.summary)
+```
+
+# Deliverable 2 Analysis
+
+- The design specifications for the MechaCar suspension coils dictate that the variance of the suspension coils must not exceed 100 pounds per square inch. Does the current manufacturing data meet this design specification for all manufacturing lots in total and each lot individually? Why or why not?
+  
+  - Overall, the variance for the PSI of the coils in all manufacturing lots is sitting at 62.3 PSI meaning it is well within the acceptable range of 0-100 PSI. Lots 1 and 2 follow this trend with respective PSI variance values of .97 and 7.5, respectively. However, lot 3 should be examined as the lot's PSI is at 170 psi, nearly double the acceptable range.
+
+# Deliverable 3
+
+```{r}
+#Total T Test
+
+total.test <- t.test(suspension.df$PSI, mu=1500)
+
+total.test
+
+```
+
+
+```{r}
+# T Test Lot 1
+
+lot.one.t <- t.test(subset(suspension.df, Manufacturing_Lot=="Lot1")$PSI, mu=1500) # For some reason this line isn't showing in html view
+
+lot.one.t
+
+```
+
+```{r}
+# T Test Lot 2
+
+lot.two.t <- t.test(subset(suspension.df, Manufacturing_Lot=="Lot2")$PSI, mu=1500)
+
+lot.two.t
+
+
+```
+```{r}
+# T Test Lot 3
+
+lot.three.t <- t.test(subset(suspension.df, Manufacturing_Lot=="Lot3")$PSI, mu=1500)
+
+lot.three.t
+
+```
+
+
+# T-test Findings 
+
+### Total Lots
+  (insert image)
+ 
+  - Overall, the p-value of all three lots is .06, which tells us to accept the null hypothesis as there is not enough evidence to support rejecting it.
+
+### Lot 1
+  (insert image)
+  - Lot 1 has a p-value of one meaning that this sample mean is almost identical to the overall mean.
+  
+### Lot 2
+  (insert image)
+  - Lot 2, while not as close to the overall mean as lot 1, still has a very high p-value meaning we should once again accept the null hypothesis.
+  
+### Lot 3
+  (insert image)
+  - However, in lot 3, we should reject the null hypothesis as the p-value is 4% which is below our set acceptance level of 5%, showing that it has a non-random amount of variance in the mean.
+  
+
+
+
+
+
+
